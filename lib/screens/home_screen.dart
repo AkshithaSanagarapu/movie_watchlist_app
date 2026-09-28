@@ -2,9 +2,19 @@ import 'package:flutter/material.dart';
 
 import '../data/movies_data.dart';
 import 'details_screen.dart';
+import 'watchlist_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  int get watchlistCount {
+    return sampleMovies.where((movie) => movie.isWatchlisted).length;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +24,25 @@ class HomeScreen extends StatelessWidget {
           'My Movie Watchlist',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        centerTitle: false,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: TextButton.icon(
+              onPressed: () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const WatchlistScreen(),
+                  ),
+                );
+
+                setState(() {});
+              },
+              icon: const Icon(Icons.bookmark),
+              label: Text('Watchlist ($watchlistCount)'),
+            ),
+          ),
+        ],
       ),
       body: ListView.builder(
         padding: const EdgeInsets.all(16),
@@ -26,26 +54,23 @@ class HomeScreen extends StatelessWidget {
             margin: const EdgeInsets.only(bottom: 16),
             clipBehavior: Clip.antiAlias,
             child: InkWell(
-              onTap: () {
-                Navigator.push(
+              onTap: () async {
+                await Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => DetailsScreen(movie: movie),
                   ),
                 );
+
+                setState(() {});
               },
               child: Row(
                 children: [
-                  ClipRRect(
-                    borderRadius: const BorderRadius.horizontal(
-                      left: Radius.circular(12),
-                    ),
-                    child: Image.asset(
-                      movie.posterPath,
-                      width: 90,
-                      height: 130,
-                      fit: BoxFit.cover,
-                    ),
+                  Image.asset(
+                    movie.posterPath,
+                    width: 90,
+                    height: 130,
+                    fit: BoxFit.cover,
                   ),
                   Expanded(
                     child: Padding(
@@ -61,14 +86,17 @@ class HomeScreen extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 8),
-                          Text(
-                            '${movie.cast.length} cast members',
-                            style: TextStyle(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurfaceVariant,
+                          Text('${movie.cast.length} cast members'),
+                          if (movie.isWatchlisted) ...[
+                            const SizedBox(height: 8),
+                            Text(
+                              '★ In Watchlist',
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.primary,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
-                          ),
+                          ],
                         ],
                       ),
                     ),
